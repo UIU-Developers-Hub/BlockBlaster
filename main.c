@@ -10,7 +10,7 @@
 
 #define SPEED 500.0f
 #define PLAYER_SPEED 1.5 * SPEED
-#define BALL_SPEED SPEED * 0.5
+#define BALL_SPEED SPEED * 0.2
 #define BLOCK_COUNT 60 
 #define BLOCK_WIDTH 40 
 #define BLOCK_HEIGHT 20
@@ -71,20 +71,28 @@ Game game = {0};
 
 Block block_stack[BLOCK_COUNT];
 
-char *read_from_file(char *file_name) {
-    FILE *file = fopen(file_name, "a+");
+void read_from_file(char *file_name) {
+    FILE *file = fopen(file_name, "r");
+
     if(file == NULL) {
         fprintf(stderr, "error: could not open file %s\n", file_name);
         exit(1);
     }
-    fseek(file, 0, SEEK_END);
-    int length = ftell(file);
-    fseek(file, 0, SEEK_SET);
-    char *current_score = malloc(sizeof(char) * length);
-    fread(current_score, 1, length, file);
-    current_score[length] = '\0';
+
+    int maxi = 0;
+    int temp;
+
+    while (fscanf(file, "%d\n", &temp) != EOF){
+        printf("%d\n", temp);
+        if(temp > maxi)
+            maxi = temp;
+    }
+
     fclose(file);
-    return current_score;
+
+    char buffer[10];
+    game.high_score = maxi;
+    
 }
 
 void write_to_file(char *file_name, int score) {
@@ -93,19 +101,9 @@ void write_to_file(char *file_name, int score) {
         fprintf(stderr, "error: could not open file %s\n", file_name);
         exit(1);
     }
+
     fseek(file, 0, SEEK_END);
-    int length = ftell(file);
-    fseek(file, 0, SEEK_SET);
-    char *current_score = malloc(sizeof(char) * length);
-    fread(current_score, 1, length, file);
-    current_score[length] = '\0';
-    fclose(file);
-    if(atoi(current_score) < score) {
-        file = fopen(file_name, "w+");
-        fprintf(file, "%d", score);
-        fclose(file);
-    }
-    free(current_score);
+    fprintf(file, "\n%d", game.score);
 }
 
 Entity init_entity(float x, float y, float width, float height) {
@@ -156,8 +154,9 @@ float random_x() {
 }
 
 void init_game(Game *game) {
-    char *high_score = read_from_file("highscore.txt");
-    printf("%s\n", high_score);
+    read_from_file("highscore.txt");
+    printf("%d\n", game->high_score);
+
 
     
     game->score = 0;
@@ -173,9 +172,6 @@ void init_game(Game *game) {
     };
     game->ball_initial_pos = ball_initial_pos;
     game->bounce_wait = 0;
-    game->high_score = atoi(high_score);
-    free(high_score);
-
 
     reset_blocks();
 }
@@ -268,6 +264,10 @@ void show_menu(){
     
 }
 
+void gameEnd(){
+    write_to_file("highscore.txt", game.score);
+}
+
 int main() {
 
     InitWindow(WIDTH, HEIGHT, "breakout");
@@ -288,18 +288,21 @@ void GamePlay(){
     
     // InitWindow(WIDTH, HEIGHT, "breakout");
 
+    bool isPause = false;
+
     while(!WindowShouldClose()) {
         game.delta_time = GetFrameTime();
         // crash if all blocks are destroyed        
-        if(game.destroyed_count >= BLOCK_COUNT) {
+        if(game.destroyed_count >= BLOCK_COUNT || game.ball.pos.y >= HEIGHT-20) {
             Vector2 font_size = MeasureTextEx(GetFontDefault(), "GAME OVER", 100, 10.0f);
-            DrawText("GAME OVER", WIDTH/2 - font_size.x/2, HEIGHT/2 - font_size.y/2, 100, BLUE);
+            DrawText("GAME OVER", WIDTH/2 - font_size.x/2, HEIGHT/2 - font_size.y/2, 100, RED);
             EndDrawing();
-            write_to_file("highscore.txt", game.score);
+            gameEnd();
             reset_ball(&game.ball, &game);
             init_game(&game);
             game.score += 1;
-            sleep(2);
+            sleep(3);
+            break;
         }
 
 
@@ -329,6 +332,20 @@ void GamePlay(){
         }
 
 
+
+        if(GetKeyPressed() == KEY_SPACE){
+            isPause = !isPause;
+        }
+
+        // PAUSE
+
+        if(isPause){
+            MENU_TITLE("PAUSE", WIDTH/2 - 50, HEIGHT/2 - 50);
+            EndDrawing();
+            continue;
+        }
+        
+
         if(game.ball.pos.x < (0 - 25)) game.ball.pos.x = 0;
         if(game.ball.pos.x > (WIDTH - game.ball.size.x + 25)) game.ball.pos.x = (WIDTH - game.ball.size.x);
 
@@ -337,6 +354,12 @@ void GamePlay(){
 
         if(game.player.pos.x < 0) game.player.pos.x = 0;
         if(game.player.pos.x > (WIDTH - game.player.size.x)) game.player.pos.x = (WIDTH - game.player.size.x);
+        
+        
+
+
+        
+
         // Key presses
         //
         //
@@ -391,8 +414,8 @@ void GamePlay(){
         DrawRectangleV(game.player.pos, game.player.size, BLACK);
         DrawRectangleV(game.ball.pos, game.ball.size, BLACK);
         char *score_str = malloc(45);
-        sprintf(score_str, "Score: %d   High Score: %d", game.score, game.high_score);
-        DrawText(score_str, 5, 0, 20, BLUE);
+        sprintf(score_str, "Score: %d", game.score);
+        DrawText(score_str, (WIDTH/2) - 80, 0, 20, BLUE);
         free(score_str);
         EndDrawing();
         if(game.bounce_wait > 0) game.bounce_wait--;
@@ -401,6 +424,7 @@ void GamePlay(){
 
 void ScoreBoard(){
 
+    read_from_file("highscore.txt");
     while(!WindowShouldClose()){
 
         char textBuffer[20];
@@ -413,7 +437,7 @@ void ScoreBoard(){
         BUILD_BUTTON("<", 10, 10);
 
         DrawText("SCORE BOARD: ", (WIDTH/2) - 150, 50, 40, BLACK);
-        sprintf(textBuffer, "%d", game.score);
+        sprintf(textBuffer, "%d", game.high_score);
         
         DrawText("Score: ", (WIDTH/2)-100, 100, 30, BLACK);
         DrawText(textBuffer, (WIDTH/2)+ 20, 100, 30, BLACK);
