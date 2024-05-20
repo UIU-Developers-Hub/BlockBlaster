@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "sdl.h": "c",
+        "stdio.h": "c",
+        "sdl_test_font.h": "c",
+        "raylib.h": "c"
+    }
+}
