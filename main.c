@@ -1,3 +1,28 @@
+/*
+
+
+
+##########################################
+#                                        #
+# ---> Project Name: Block Blaster <---  # 
+#                         #              #   
+#      Team Info:                        # 
+#                                        #  
+#      Name1: Azizur Rahaman             #  
+#      ID:0112330455                     #
+#                                        #
+#      Name2: Tain Tabassum              #
+#      ID: 0112330906                    #
+#                                        #
+##########################################
+
+
+*/
+
+
+
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,32 +42,6 @@
 #define ITERATIONS 4
 #define BOUNCE_WAIT 300
 
-
-// typedef struct{
-//    unsigned int R;
-//    unsigned int G;
-//     unsigned int B;
-// } Color;
-
-//colors
-// struct{
-//     Color color1;
-//     Color color2;
-//     Color color3;
-//     Color color4;
-//     Color color5;
-//     Color color6;
-// } colors = {
-//     .color1 = {180,88,123,255},
-//     .color2 = {178,73,74,255},
-//     .color3 = {196,111,69,255},
-//     .color4 = {196,164,60,255},
-//     .color5 = {83,148,76,255},
-//     .color6 = {52,54,189,255},
-
-// };
-
-// INITIALIZE COLORS
 
 
 typedef struct {
@@ -71,12 +70,14 @@ Game game = {0};
 
 Block block_stack[BLOCK_COUNT];
 
-void read_from_file(char *file_name) {
-    FILE *file = fopen(file_name, "r");
+void read_from_file() {
+    FILE *file = fopen("database.txt", "r");
 
     if(file == NULL) {
-        fprintf(stderr, "error: could not open file %s\n", file_name);
-        exit(1);
+        fprintf(stderr, "error: could not open file highscore.txt\n");
+        fclose(file);
+        game.score = 0;
+        return;
     }
 
     int maxi = 0;
@@ -87,23 +88,20 @@ void read_from_file(char *file_name) {
         if(temp > maxi)
             maxi = temp;
     }
-
     fclose(file);
 
-    char buffer[10];
     game.high_score = maxi;
-    
 }
 
-void write_to_file(char *file_name, int score) {
-    FILE *file = fopen(file_name, "a+");
+void write_to_file() {
+    FILE *file = fopen("database.txt", "a");
     if(file == NULL) {
-        fprintf(stderr, "error: could not open file %s\n", file_name);
-        exit(1);
+        fprintf(stderr, "error: could not open file highscore.txt\n");
+        return;
     }
 
-    fseek(file, 0, SEEK_END);
     fprintf(file, "\n%d", game.score);
+    fclose(file);
 }
 
 Entity init_entity(float x, float y, float width, float height) {
@@ -153,8 +151,8 @@ float random_x() {
     return SPEED - (float)rand()/(float)(RAND_MAX/0.19f);
 }
 
-void init_game(Game *game) {
-    read_from_file("highscore.txt");
+void initialize(Game *game) {
+    read_from_file();
     printf("%d\n", game->high_score);
 
 
@@ -264,13 +262,19 @@ void show_menu(){
     
 }
 
-void gameEnd(){
-    write_to_file("highscore.txt", game.score);
+
+void playAduio(char audioFile[]){
+    InitAudioDevice();
+    Music music = LoadMusicStream(audioFile);
+    PlayMusicStream(music);
+    UpdateMusicStream(music);
+    UnloadMusicStream(music);
+    CloseAudioDevice();
 }
 
 int main() {
 
-    InitWindow(WIDTH, HEIGHT, "breakout");
+    InitWindow(WIDTH, HEIGHT, "Block Blaster");
 
     splash_screen();
 
@@ -282,7 +286,7 @@ int main() {
 
 void GamePlay(){
 
-    init_game(&game);
+    initialize(&game);
     game.ball = init_entity(game.ball_initial_pos.x, game.ball_initial_pos.y, 20, 20);
     game.player = init_entity(WIDTH/2, HEIGHT - (HEIGHT/10), 100, 20);
     
@@ -294,12 +298,17 @@ void GamePlay(){
         game.delta_time = GetFrameTime();
         // crash if all blocks are destroyed        
         if(game.destroyed_count >= BLOCK_COUNT || game.ball.pos.y >= HEIGHT-20) {
+            
+            playAduio("assets/game_over.wav");
+
             Vector2 font_size = MeasureTextEx(GetFontDefault(), "GAME OVER", 100, 10.0f);
             DrawText("GAME OVER", WIDTH/2 - font_size.x/2, HEIGHT/2 - font_size.y/2, 100, RED);
             EndDrawing();
-            gameEnd();
+
+            write_to_file();
+
             reset_ball(&game.ball, &game);
-            init_game(&game);
+            initialize(&game);
             game.score += 1;
             sleep(3);
             break;
@@ -424,7 +433,7 @@ void GamePlay(){
 
 void ScoreBoard(){
 
-    read_from_file("highscore.txt");
+    read_from_file();
     while(!WindowShouldClose()){
 
         char textBuffer[20];
