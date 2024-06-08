@@ -1,4 +1,4 @@
-[[![Alt text for your image](https://example.com/path/to/image.jpg)](https://imgur.com/iZrBzQY)](https://imgur.com/iZrBzQY)
+![Alt text for your image](https://i.imgur.com/iZrBzQY.jpg)
 
 # BlockBlaster
 
