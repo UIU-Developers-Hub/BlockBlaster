@@ -100,7 +100,7 @@ This project is licensed under the MIT License.
 
 ## Contact
 
-For any questions or suggestions, please open an issue or contact me at [arahaman2330455@bscse.uiu.ac.bd].
+For any questions or suggestions, please open an issue or contact me at arahaman2330455@bscse.uiu.ac.bd
 
 ---
 
