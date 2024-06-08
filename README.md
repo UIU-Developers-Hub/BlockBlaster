@@ -1,5 +1,14 @@
 ![Alt text for your image](https://i.imgur.com/iZrBzQY.jpg)
 
+
+<div align="center">
+  <img src="https://i.imgur.com/9xXbkxt.jpeg", width="250" />
+  <img src="https://i.imgur.com/u7LlFWk.jpeg" width="250" />
+  <img src="https://i.imgur.com/pUUEM1p.jpeg" width="250" />
+</div>
+
+
+
 # BlockBlaster
 
 BlockBlaster is a classic breakout-style game built using SDL2 and Raylib. The objective is to break all the blocks by bouncing a ball with a paddle. This project demonstrates the use of graphics libraries in C to create a fun and interactive game.
