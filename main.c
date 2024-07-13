@@ -5,14 +5,10 @@
 ##########################################
 #                                        #
 # ---> Project Name: Block Blaster <---  # 
-#                         #              #   
-#      Team Info:                        # 
-#                                        #  
-#      Name1: Azizur Rahaman             #  
+#                                        #   
+#      Name: Azizur Rahaman              #  
 #      ID:0112330455                     #
 #                                        #
-#      Name2: Tain Tabassum              #
-#      ID: 0112330906                    #
 #                                        #
 ##########################################
 
@@ -190,23 +186,12 @@ void splash_screen(){
     float posX = (WIDTH/2) - 70;
     float posY = HEIGHT - (HEIGHT/4);
 
-    // Load splash image
-    Image image = LoadImage("assets/splash_image.png");
-    Texture2D texture = LoadTextureFromImage(image);
-    UnloadImage(image);
-
     bool isClose = false;
 
     while(!(IsKeyPressed(KEY_ENTER))) {
         BeginDrawing();
         ClearBackground(LIGHTGRAY);
 
-        texture.width = WIDTH;
-        texture.height = HEIGHT;
-
-        // Image Drawing
-        DrawTexture(texture, 0, 0, WHITE);
-        
         DrawText("BLOCK BLASTER", 50, HEIGHT/2 - 20, 80, RED);
 
         // Enter Button
@@ -221,7 +206,6 @@ void splash_screen(){
     }
 
     if(isClose) CloseWindow();
-    UnloadTexture(texture);
     printf("key pressed\n");
 }
 
