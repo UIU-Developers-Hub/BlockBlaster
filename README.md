@@ -1,4 +1,4 @@
-![Alt text for your image](https://i.imgur.com/iZrBzQY.jpg)
+![Alt text for your image](https://i.ibb.co/t3RK0Gf/Screenshot-2024-07-13-at-6-23-51-PM.png)
 
 
 <div align="center">
